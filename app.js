@@ -1,6 +1,6 @@
 import {
   DISCIPLINES, ORDER, LB_PER_KG, convert, parseTime, parseNumber, formatTime, formatLoad,
-} from './model.js';
+} from './model.js?v=202611092336';
 
 const STEPS = ['age', 'weight', 'sex', 'sport', 'value', 'result'];
 const INPUT_STEPS = STEPS.length - 1;

@@ -2,8 +2,8 @@
  * nav: none, a progress bar with a back button · signature: one question per screen, ending on your level in the other sports · states: empty, error, full
  * axes: light/geometric-sans/cool-blue · posture: restrained · contrast: pass · v2.0.0 */
 /* Hallmark · pre-emit critique: P4 H5 E4 S4 R5 V4 · weakest: S, a stepper is a familiar shape; the pictogram choices and the result list with big figures make it this product's */
-@import url("./tokens.css");
-@import url("./base.css");
+@import url("./tokens.css?v=202611092336");
+@import url("./base.css?v=202611092336");
 
 :root {
   --control-h: 56px;
@@ -93,6 +93,7 @@ h1[tabindex="-1"]:focus, h1[tabindex="-1"]:focus-visible { outline: none; }
 
 /* ---- Footer --------------------------------------------------------------- */
 .foot { padding: var(--space-lg) var(--gutter); text-align: center; font-size: var(--text-xs); color: var(--color-muted); }
+.foot p { margin-inline: auto; }
 .foot a { color: inherit; text-decoration-color: var(--color-rule-2); }
 .foot a:hover { color: var(--color-ink); }
 
