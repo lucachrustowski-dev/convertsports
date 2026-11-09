@@ -2,8 +2,12 @@
 
 Rechne deine Leistung von einer Sportart in eine andere um. Eine Seite, kein Account.
 
-Disziplinen zum Start: **Bankdrücken** (kg oder lbs), **100 m Kraul** und **100 m Brust** (Langbahn), **100 m Sprint**.
-Vorher gibst du Alter, Körpergewicht und Geschlecht an.
+Ein Schritt pro Bildschirm: Alter, Gewicht (kg oder lbs), Geschlecht, Sportart, deine Leistung.
+Am Ende siehst du, was dein Level in den anderen Sportarten wert ist.
+
+Sportarten zum Start: **Bankdrücken**, **100 m Kraul** und **100 m Brust** (Langbahn), **100 m Sprint**.
+
+Live: https://lucachrustowski-dev.github.io/convertsports/
 
 ## Starten
 
@@ -29,5 +33,5 @@ Den Anker änderst du in `ANCHOR` in `model.js`, alles andere rechnet sich darau
 
 ## Design
 
-Gebaut mit dem [Hallmark](https://github.com/nutlope/hallmark)-Design-Skill, Theme „Sport“ (`tokens.css`, `base.css`).
+Gebaut nach den Regeln des [Hallmark](https://github.com/nutlope/hallmark)-Design-Skills, mit eigenem hellblauen Look und der Schrift Plus Jakarta Sans (`tokens.css`, `base.css`).
 Piktogramme: [IconOven](https://iconoven.com/icons) (MIT); das Brust-Piktogramm ist im selben Stil ergänzt.

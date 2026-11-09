@@ -1,180 +1,225 @@
 import {
-  DISCIPLINES, ORDER, LB_PER_KG, convert, levelFor, parseTime, parseNumber, formatTime, formatLoad,
+  DISCIPLINES, ORDER, LB_PER_KG, convert, parseTime, parseNumber, formatTime, formatLoad,
 } from './model.js';
 
-const form = document.getElementById('converter');
+const STEPS = ['age', 'weight', 'sex', 'sport', 'value', 'result'];
+const INPUT_STEPS = STEPS.length - 1;
+
+const form = document.getElementById('wizard');
 const $ = (id) => document.getElementById(id);
-const els = {
-  age: $('age'), bodyweight: $('bodyweight'), value: $('value'),
-  ageHelp: $('age-help'), bwHelp: $('bodyweight-help'), valueHelp: $('value-help'),
-  valueLabel: $('value-label'), valueUnit: $('value-unit'),
-  score: $('score'), points: $('score-points'), level: $('score-level'),
-  body: $('results-body'),
+const sections = Object.fromEntries(STEPS.map((s) => [s, form.querySelector(`[data-step="${s}"]`)]));
+
+const QUESTION = {
+  bench: { q: 'Wie viel drückst du?', placeholder: '120', hint: 'Dein Maximalgewicht für eine Wiederholung.' },
+  free: { q: 'Deine Zeit über 100 m Kraul?', placeholder: '56,5', hint: 'Langbahn, zum Beispiel 56,5 oder 1:02,30.' },
+  breast: { q: 'Deine Zeit über 100 m Brust?', placeholder: '1:12', hint: 'Langbahn, zum Beispiel 1:12 oder 1:12,00.' },
+  sprint: { q: 'Deine Zeit über 100 m Sprint?', placeholder: '11,2', hint: 'Zum Beispiel 11,2 oder 11,20.' },
 };
 
-const COPY = {
-  bench: { label: 'Maximalgewicht im Bankdrücken', hint: 'Eine saubere Wiederholung, Gewicht inklusive Stange.' },
-  free: { label: 'Deine Zeit über 100 m Kraul', hint: 'Schreib die Zeit als 56,5 oder 1:02,30.' },
-  breast: { label: 'Deine Zeit über 100 m Brust', hint: 'Schreib die Zeit als 1:12 oder 1:12,00.' },
-  sprint: { label: 'Deine Zeit über 100 m Sprint', hint: 'Schreib die Zeit als 11,2 oder 11,20.' },
-};
-
-const picto = (id) => document.querySelector(`label[for="from-${id}"] .picto`)?.outerHTML ?? '';
 const radio = (name) => form.querySelector(`input[name="${name}"]:checked`)?.value;
+const unit = () => radio('unit') ?? 'kg';
+const unitLabel = () => (unit() === 'lb' ? 'lbs' : 'kg');
 
-let lastUnit = radio('unit');
-let lastFrom = radio('from');
+let current = 'age';
 
-function readState() {
-  return {
-    age: els.age.value.trim(),
-    bodyweight: els.bodyweight.value.trim(),
-    sex: radio('sex'),
-    unit: radio('unit'),
-    from: radio('from'),
-    value: els.value.value.trim(),
-  };
+// ---- Navigation ------------------------------------------------------------
+
+function show(step, { push = true } = {}) {
+  current = step;
+  for (const [name, el] of Object.entries(sections)) el.hidden = name !== step;
+
+  const i = STEPS.indexOf(step);
+  $('progress').hidden = false;
+  $('back').hidden = i === 0;
+  $('progress-fill').style.transform = `scaleX(${Math.min(i + 1, INPUT_STEPS) / INPUT_STEPS})`;
+  $('progress-text').textContent = step === 'result' ? 'Ergebnis' : `Schritt ${i + 1} von ${INPUT_STEPS}`;
+
+  if (step === 'value') prepareValueStep();
+  if (step === 'result') renderResult();
+
+  if (push) history.pushState({ step }, '', `#${step}`);
+
+  const input = sections[step].querySelector('input:not([type="radio"])');
+  const checked = sections[step].querySelector('input[type="radio"]:checked');
+  if (input) input.focus({ preventScroll: true });
+  else if (checked) checked.focus({ preventScroll: true });
+  else sections[step].querySelector('h1').focus({ preventScroll: true });
+  window.scrollTo(0, 0);
 }
 
-function setInvalid(input, help, message) {
-  input.toggleAttribute('aria-invalid', Boolean(message));
-  if (message) help.textContent = message;
-  return !message;
+function next() {
+  if (!validate(current)) return;
+  show(STEPS[STEPS.indexOf(current) + 1]);
 }
 
-function formatValue(id, v, unit) {
-  return DISCIPLINES[id].kind === 'load' ? formatLoad(v, unit) : formatTime(v);
+function back() {
+  const i = STEPS.indexOf(current);
+  if (i > 0) show(STEPS[i - 1]);
 }
 
-function unitFor(id, unit, value) {
-  if (DISCIPLINES[id].kind === 'load') return unit === 'lb' ? 'lbs' : 'kg';
-  return value < 60 ? 's' : '';
+// ---- Validation --------------------------------------------------------------
+
+function fail(input, help, message) {
+  input.setAttribute('aria-invalid', 'true');
+  help.textContent = message;
+  help.classList.add('help--error');
+  input.focus();
+  return false;
 }
 
-function renderEmpty(message, isError = false) {
-  els.score.hidden = true;
-  els.body.innerHTML = `<tr><td colspan="2" class="results__state${isError ? ' results__state--error' : ''}">${message}</td></tr>`;
+function clear(input, help, text = '') {
+  input.removeAttribute('aria-invalid');
+  help.textContent = text;
+  help.classList.remove('help--error');
 }
 
-function render() {
-  const s = readState();
-  const d = DISCIPLINES[s.from];
-  const unitLabel = s.unit === 'lb' ? 'lbs' : 'kg';
-  document.querySelectorAll('[data-unit-label]').forEach((n) => { n.textContent = unitLabel; });
-  els.valueLabel.textContent = COPY[s.from].label;
-  els.valueUnit.textContent = d.kind === 'load' ? unitLabel : s.from === 'sprint' ? 's' : '';
+function readAge() {
+  const n = Number($('age').value.trim());
+  return Number.isInteger(n) && n >= 10 && n <= 100 ? n : null;
+}
 
-  // Profile
-  const age = Number(s.age);
-  const ageOk = setInvalid(els.age, els.ageHelp,
-    !s.age || !Number.isFinite(age) || age < 10 || age > 100 ? 'Gib ein Alter zwischen 10 und 100 ein.' : '');
-  if (ageOk) els.ageHelp.textContent = '';
+function readBodyweightKg() {
+  const n = parseNumber($('bodyweight').value);
+  if (n == null) return null;
+  const kg = unit() === 'lb' ? n / LB_PER_KG : n;
+  return kg >= 30 && kg <= 250 ? kg : null;
+}
 
-  const bwRaw = parseNumber(s.bodyweight);
-  const bwKg = bwRaw == null ? null : s.unit === 'lb' ? bwRaw / LB_PER_KG : bwRaw;
-  const bwOk = setInvalid(els.bodyweight, els.bwHelp,
-    bwKg == null || bwKg < 30 || bwKg > 250
-      ? `Gib dein Gewicht in ${unitLabel} ein, zum Beispiel ${s.unit === 'lb' ? '176' : '80'}.` : '');
-  if (bwOk) els.bwHelp.textContent = '';
-
-  // Performance
-  let value = null;
-  let hint = COPY[s.from].hint;
-  let error = '';
-  if (s.value) {
-    if (d.kind === 'load') {
-      const n = parseNumber(s.value);
-      value = n == null ? null : s.unit === 'lb' ? n / LB_PER_KG : n;
-      if (value == null) error = `Das lesen wir nicht als Gewicht. Schreib nur die Zahl, zum Beispiel ${s.unit === 'lb' ? '265' : '120'}.`;
-    } else {
-      const t = parseTime(s.value, s.from);
-      value = t?.seconds ?? null;
-      if (value == null) error = `So lesen wir die Zeit nicht. ${COPY[s.from].hint}`;
-      else if (t.reinterpreted) hint = `Gelesen als ${formatTime(value)}.`;
+function readValue() {
+  const id = radio('from');
+  const d = DISCIPLINES[id];
+  const raw = $('value').value;
+  if (d.kind === 'load') {
+    const n = parseNumber(raw);
+    if (n == null) return { error: `Schreib nur die Zahl, zum Beispiel ${unit() === 'lb' ? '265' : '120'}.` };
+    const kg = unit() === 'lb' ? n / LB_PER_KG : n;
+    if (kg < d.range[0] || kg > d.range[1]) {
+      return { error: `Bitte zwischen ${formatLoad(d.range[0], unit())} und ${formatLoad(d.range[1], unit())} ${unitLabel()}.` };
     }
-    if (value != null && (value < d.range[0] || value > d.range[1])) {
-      error = d.kind === 'load'
-        ? `Das liegt außerhalb dessen, was wir umrechnen: ${formatLoad(d.range[0], s.unit)} bis ${formatLoad(d.range[1], s.unit)} ${unitLabel}.`
-        : `Das liegt außerhalb dessen, was wir umrechnen: ${formatTime(d.range[0])} bis ${formatTime(d.range[1])}.`;
-      value = null;
-    }
+    return { value: kg };
   }
-  els.value.toggleAttribute('aria-invalid', Boolean(error));
-  els.valueHelp.textContent = error || hint;
-  els.valueHelp.classList.toggle('help--error', Boolean(error));
+  const t = parseTime(raw, id);
+  if (!t) return { error: `So lesen wir die Zeit nicht. ${QUESTION[id].hint}` };
+  if (t.seconds < d.range[0] || t.seconds > d.range[1]) {
+    return { error: `Bitte eine Zeit zwischen ${formatTime(d.range[0])} und ${formatTime(d.range[1])}.` };
+  }
+  return { value: t.seconds, reinterpreted: t.reinterpreted };
+}
 
-  writeUrl(s);
+function validate(step) {
+  if (step === 'age') {
+    if (readAge() == null) return fail($('age'), $('age-help'), 'Gib ein Alter zwischen 10 und 100 ein.');
+    clear($('age'), $('age-help'));
+  }
+  if (step === 'weight') {
+    if (readBodyweightKg() == null) {
+      return fail($('bodyweight'), $('bodyweight-help'), `Gib dein Gewicht in ${unitLabel()} ein, zum Beispiel ${unit() === 'lb' ? '176' : '80'}.`);
+    }
+    clear($('bodyweight'), $('bodyweight-help'));
+  }
+  if (step === 'value') {
+    const r = readValue();
+    if (r.error) return fail($('value'), $('value-help'), r.error);
+    clear($('value'), $('value-help'));
+  }
+  return true;
+}
 
-  if (!s.value) return renderEmpty('Trag deine Leistung ein, dann steht hier dein Gegenwert im Gym, im Wasser und auf der Bahn.');
-  if (error) return renderEmpty('Noch kein Ergebnis: die Eingabe links passt nicht.', true);
-  if (!ageOk || !bwOk) return renderEmpty('Noch kein Ergebnis: prüf Alter und Gewicht oben.', true);
+// ---- Steps -----------------------------------------------------------------
 
-  const athlete = { sex: s.sex, age, bodyweight: bwKg };
-  const { points, results } = convert(s.from, value, athlete);
-  els.points.textContent = points.toLocaleString('de-DE');
-  els.level.textContent = levelFor(points);
-  els.score.hidden = false;
+function prepareValueStep() {
+  const id = radio('from');
+  const d = DISCIPLINES[id];
+  const q = QUESTION[id];
+  $('q-value').textContent = q.q;
+  $('value').placeholder = d.kind === 'load' && unit() === 'lb' ? '265' : q.placeholder;
+  $('value-unit').textContent = d.kind === 'load' ? unitLabel() : id === 'sprint' ? 's' : '';
+  if (!$('value').hasAttribute('aria-invalid')) $('value-help').textContent = q.hint;
+}
 
-  els.body.innerHTML = results.map((r) => {
-    const dd = DISCIPLINES[r.id];
-    return `<tr class="${r.source ? 'is-source' : ''}">
-      <th scope="row">
-        <span class="row-sport">${picto(r.id)}<span><span class="row-sport__name">${dd.name}</span><span class="row-sport__meta">${r.source ? 'Deine Eingabe' : dd.detail}</span></span></span>
-      </th>
-      <td class="num"><span class="time">${formatValue(r.id, r.value, s.unit)}</span> <span class="time-unit">${unitFor(r.id, s.unit, r.value)}</span></td>
-    </tr>`;
+function formatResult(id, v) {
+  if (DISCIPLINES[id].kind === 'load') return { figure: formatLoad(v, unit()), unit: unitLabel() };
+  return { figure: formatTime(v), unit: v < 60 ? 's' : 'min' };
+}
+
+function renderResult() {
+  const from = radio('from');
+  const { value } = readValue();
+  const athlete = { sex: radio('sex'), age: readAge(), bodyweight: readBodyweightKg() };
+  const { results } = convert(from, value, athlete);
+
+  const mine = formatResult(from, value);
+  const where = DISCIPLINES[from].kind === 'load' ? `im ${DISCIPLINES[from].name}` : `über ${DISCIPLINES[from].name}`;
+  $('q-result').textContent = `Deine ${mine.figure} ${mine.unit} ${where} entsprechen`;
+
+  $('results').innerHTML = results.filter((r) => !r.source).map((r) => {
+    const d = DISCIPLINES[r.id];
+    const f = formatResult(r.id, r.value);
+    const picto = document.querySelector(`[data-picto="${r.id}"]`).outerHTML;
+    return `<li class="result">
+      ${picto}
+      <span class="result__name">${d.name}<span class="result__detail">${d.detail}</span></span>
+      <span class="result__value"><span class="result__figure">${f.figure}</span> <span class="result__unit">${f.unit}</span></span>
+    </li>`;
   }).join('');
 }
 
-// Keep the numbers when the unit flips, and clear the value when the discipline changes.
-function onChange(e) {
-  const s = readState();
-  if (e.target.name === 'unit' && s.unit !== lastUnit) {
-    const factor = s.unit === 'lb' ? LB_PER_KG : 1 / LB_PER_KG;
-    const bw = parseNumber(s.bodyweight);
-    if (bw != null) els.bodyweight.value = String(Math.round(bw * factor));
-    if (DISCIPLINES[s.from].kind === 'load') {
-      const v = parseNumber(s.value);
-      if (v != null) els.value.value = formatLoad(s.unit === 'lb' ? v : v / LB_PER_KG, s.unit);
-    }
-    lastUnit = s.unit;
+// ---- Events ----------------------------------------------------------------
+
+form.addEventListener('submit', (e) => { e.preventDefault(); next(); });
+
+form.addEventListener('change', (e) => {
+  const t = e.target;
+  if (t.name === 'sex' || t.name === 'from') {
+    if (t.name === 'from') { $('value').value = ''; clear($('value'), $('value-help')); }
+    show(t.name === 'sex' ? 'sport' : 'value');
   }
-  if (e.target.name === 'from' && s.from !== lastFrom) {
-    // Carry the current equivalent over, so switching discipline keeps your level.
-    const row = [...els.body.querySelectorAll('tr')][ORDER.indexOf(s.from)];
-    const carried = row?.querySelector('.time')?.textContent;
-    els.value.value = carried ?? '';
-    lastFrom = s.from;
+  if (t.name === 'unit') {
+    document.querySelectorAll('[data-unit-label]').forEach((n) => { n.textContent = unitLabel(); });
+    const n = parseNumber($('bodyweight').value);
+    if (n != null) $('bodyweight').value = String(Math.round(unit() === 'lb' ? n * LB_PER_KG : n / LB_PER_KG));
+    $('bodyweight').placeholder = unit() === 'lb' ? '176' : '80';
+    $('bodyweight').focus();
   }
-  render();
-}
+});
 
-// ---- URL state -------------------------------------------------------------
+// A click on an already chosen option still moves on.
+form.addEventListener('click', (e) => {
+  const label = e.target.closest('label.choice');
+  if (!label) return;
+  const input = $(label.htmlFor);
+  if (input.checked) { e.preventDefault(); show(input.name === 'sex' ? 'sport' : 'value'); }
+});
 
-function writeUrl(s) {
-  const p = new URLSearchParams({ from: s.from, v: s.value, age: s.age, bw: s.bodyweight, sex: s.sex, unit: s.unit });
-  history.replaceState(null, '', `?${p}`);
-}
+form.addEventListener('input', (e) => {
+  if (e.target.hasAttribute('aria-invalid')) {
+    e.target.removeAttribute('aria-invalid');
+    const help = $(e.target.getAttribute('aria-describedby'));
+    help.classList.remove('help--error');
+    help.textContent = e.target.id === 'value' ? QUESTION[radio('from')].hint : '';
+  }
+});
 
-function readUrl() {
-  const p = new URLSearchParams(location.search);
-  const check = (name, v) => {
-    const el = form.querySelector(`input[name="${name}"][value="${CSS.escape(v)}"]`);
-    if (el) el.checked = true;
-  };
-  if (p.has('sex')) check('sex', p.get('sex'));
-  if (p.has('unit')) check('unit', p.get('unit'));
-  if (p.has('from') && ORDER.includes(p.get('from'))) check('from', p.get('from'));
-  if (p.has('age')) els.age.value = p.get('age');
-  if (p.has('bw')) els.bodyweight.value = p.get('bw');
-  if (p.has('v')) els.value.value = p.get('v');
-  lastUnit = radio('unit');
-  lastFrom = radio('from');
-}
+$('back').addEventListener('click', () => history.back());
+$('other-sport').addEventListener('click', () => show('sport'));
+$('restart').addEventListener('click', () => {
+  form.reset();
+  for (const id of ['age', 'bodyweight', 'value']) $(id).removeAttribute('aria-invalid');
+  document.querySelectorAll('[data-unit-label]').forEach((n) => { n.textContent = 'kg'; });
+  show('age');
+});
 
-form.addEventListener('submit', (e) => e.preventDefault());
-form.addEventListener('input', (e) => { if (e.target.type !== 'radio') render(); });
-form.addEventListener('change', (e) => { if (e.target.type === 'radio') onChange(e); });
+window.addEventListener('popstate', (e) => {
+  const step = e.state?.step;
+  if (!step) return show('age', { push: false });
+  // Never land on a step whose earlier answers are missing.
+  for (const s of STEPS.slice(0, STEPS.indexOf(step))) {
+    if ((s === 'age' && readAge() == null) || (s === 'weight' && readBodyweightKg() == null)
+      || (s === 'sex' && !radio('sex')) || (s === 'sport' && !radio('from'))
+      || (s === 'value' && readValue().error)) return show(s, { push: false });
+  }
+  show(step, { push: false });
+});
 
-readUrl();
-render();
+history.replaceState({ step: 'age' }, '', location.pathname + location.search);
+show('age', { push: false });
