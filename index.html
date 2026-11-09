@@ -3,143 +3,118 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ConvertSports, Leistung zwischen Sportarten umrechnen</title>
-  <meta name="description" content="Rechne dein Bankdrücken in Schwimm- und Sprintzeiten um, und zurück. Mit Alter, Gewicht und Geschlecht.">
+  <title>ConvertSports, dein Level in anderen Sportarten</title>
+  <meta name="description" content="Gib dein Level in einer Sportart ein und sieh, was es im Bankdrücken, Schwimmen oder Sprint wert ist.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@800&family=Albert+Sans:wght@400;500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
 </head>
 <body>
-  <header class="bar">
-    <div class="container bar__inner">
-      <a class="wordmark" href="./" aria-label="ConvertSports, Startseite">ConvertSports</a>
+  <main class="wizard">
+    <div class="progress" id="progress" hidden>
+      <button type="button" class="back" id="back" aria-label="Zurück zum vorherigen Schritt">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7l7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="progress__track" aria-hidden="true"><div class="progress__fill" id="progress-fill"></div></div>
+      <p class="progress__text" id="progress-text">Schritt 1 von 5</p>
     </div>
-  </header>
 
-  <main class="container">
-    <form id="converter" class="converter" novalidate>
-      <div class="intro">
-        <h1>Rechne deine Leistung um</h1>
-        <p class="lead">Gleiche Stufe, andere Sportart: wähl deine Disziplin, trag deine Leistung ein.</p>
-      </div>
-
-      <section class="step step--profile" aria-labelledby="h-profile">
-        <h2 id="h-profile"><span class="step__n">1</span> Über dich</h2>
-        <div class="profile">
-          <div class="field">
-            <label for="age">Alter</label>
-            <div class="input-unit">
-              <input id="age" name="age" type="number" inputmode="numeric" min="10" max="100" step="1" value="25" autocomplete="off" aria-describedby="age-help">
-              <span class="unit" aria-hidden="true">Jahre</span>
-            </div>
-            <p class="help" id="age-help" aria-live="polite"></p>
-          </div>
-          <div class="field">
-            <label for="bodyweight">Körpergewicht</label>
-            <div class="input-unit">
-              <input id="bodyweight" name="bodyweight" type="text" inputmode="decimal" value="80" autocomplete="off" aria-describedby="bodyweight-help">
-              <span class="unit" data-unit-label aria-hidden="true">kg</span>
-            </div>
-            <p class="help" id="bodyweight-help" aria-live="polite"></p>
-          </div>
-          <fieldset class="seg">
-            <legend>Geschlecht</legend>
-            <div class="seg__row">
-              <input type="radio" name="sex" id="sex-m" value="m" checked><label for="sex-m">Männlich</label>
-              <input type="radio" name="sex" id="sex-f" value="f"><label for="sex-f">Weiblich</label>
-            </div>
-          </fieldset>
-          <fieldset class="seg">
-            <legend>Einheit</legend>
-            <div class="seg__row">
-              <input type="radio" name="unit" id="unit-kg" value="kg" checked><label for="unit-kg">kg</label>
-              <input type="radio" name="unit" id="unit-lb" value="lb"><label for="unit-lb">lbs</label>
-            </div>
-          </fieldset>
+    <form id="wizard" novalidate>
+      <!-- 1 Alter -->
+      <section class="step" data-step="age" aria-labelledby="q-age">
+        <h1 id="q-age" tabindex="-1">Wie alt bist du?</h1>
+        <div class="input-unit">
+          <input id="age" name="age" type="number" inputmode="numeric" min="10" max="100" placeholder="25" autocomplete="off" aria-describedby="age-help">
+          <span class="unit" aria-hidden="true">Jahre</span>
         </div>
+        <p class="help" id="age-help" aria-live="polite"></p>
+        <button type="submit" class="btn">Weiter</button>
       </section>
 
-      <section class="step" aria-labelledby="h-sport">
-        <h2 id="h-sport"><span class="step__n">2</span> Deine Disziplin</h2>
-        <fieldset class="sports">
-          <legend class="visually-hidden">Disziplin wählen</legend>
-          <input type="radio" name="from" id="from-bench" value="bench" checked>
-          <label for="from-bench" class="sport">
-            <svg class="picto" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="M2.75 6h18.5"/><rect width="2" height="5.5" x="4.25" y="3.25" rx=".75"/><rect width="2" height="5.5" x="17.75" y="3.25" rx=".75"/><circle cx="5" cy="12.25" r="1.75"/><path d="M7.5 12.5h7m-5.5 0V6m5.5 6.5l3.5 2v6.75M4.75 16h11M6.5 16v5.25"/></g></svg>
-            <span class="sport__name">Bankdrücken</span>
-            <span class="sport__meta">Gym</span>
+      <!-- 2 Gewicht -->
+      <section class="step" data-step="weight" aria-labelledby="q-weight">
+        <h1 id="q-weight" tabindex="-1">Wie viel wiegst du?</h1>
+        <div class="input-unit">
+          <input id="bodyweight" name="bodyweight" type="text" inputmode="decimal" placeholder="80" autocomplete="off" aria-describedby="bodyweight-help">
+          <span class="unit" data-unit-label aria-hidden="true">kg</span>
+        </div>
+        <fieldset class="seg">
+          <legend class="visually-hidden">Einheit</legend>
+          <input type="radio" name="unit" id="unit-kg" value="kg" checked><label for="unit-kg">kg</label>
+          <input type="radio" name="unit" id="unit-lb" value="lb"><label for="unit-lb">lbs</label>
+        </fieldset>
+        <p class="help" id="bodyweight-help" aria-live="polite"></p>
+        <button type="submit" class="btn">Weiter</button>
+      </section>
+
+      <!-- 3 Geschlecht -->
+      <section class="step" data-step="sex" aria-labelledby="q-sex">
+        <h1 id="q-sex" tabindex="-1">Dein Geschlecht?</h1>
+        <fieldset class="choices choices--two">
+          <legend class="visually-hidden">Geschlecht</legend>
+          <input type="radio" name="sex" id="sex-m" value="m"><label for="sex-m" class="choice">Männlich</label>
+          <input type="radio" name="sex" id="sex-f" value="f"><label for="sex-f" class="choice">Weiblich</label>
+        </fieldset>
+      </section>
+
+      <!-- 4 Sportart -->
+      <section class="step" data-step="sport" aria-labelledby="q-sport">
+        <h1 id="q-sport" tabindex="-1">Welche Sportart machst du?</h1>
+        <fieldset class="choices">
+          <legend class="visually-hidden">Sportart</legend>
+          <input type="radio" name="from" id="from-bench" value="bench">
+          <label for="from-bench" class="choice choice--sport">
+            <svg class="picto" data-picto="bench" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="M2.75 6h18.5"/><rect width="2" height="5.5" x="4.25" y="3.25" rx=".75"/><rect width="2" height="5.5" x="17.75" y="3.25" rx=".75"/><circle cx="5" cy="12.25" r="1.75"/><path d="M7.5 12.5h7m-5.5 0V6m5.5 6.5l3.5 2v6.75M4.75 16h11M6.5 16v5.25"/></g></svg>
+            <span>Bankdrücken</span>
           </label>
           <input type="radio" name="from" id="from-free" value="free">
-          <label for="from-free" class="sport">
-            <svg class="picto" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><circle cx="17" cy="7.75" r="2.5"/><path d="M4.25 13L9 8.5l3.5 4.5m-9.75 3.75c1.54 0 1.54-1 3.08-1s1.54 1 3.08 1s1.54-1 3.08-1s1.54 1 3.08 1s1.54-1 3.08-1s1.54 1 3.08 1m-18.48 4c1.54 0 1.54-1 3.08-1s1.54 1 3.08 1s1.54-1 3.08-1s1.54 1 3.08 1s1.54-1 3.08-1s1.54 1 3.08 1"/></g></svg>
-            <span class="sport__name">100 m Kraul</span>
-            <span class="sport__meta">Schwimmen, Langbahn</span>
+          <label for="from-free" class="choice choice--sport">
+            <svg class="picto" data-picto="free" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><circle cx="17" cy="7.75" r="2.5"/><path d="M4.25 13L9 8.5l3.5 4.5m-9.75 3.75c1.54 0 1.54-1 3.08-1s1.54 1 3.08 1s1.54-1 3.08-1s1.54 1 3.08 1s1.54-1 3.08-1s1.54 1 3.08 1m-18.48 4c1.54 0 1.54-1 3.08-1s1.54 1 3.08 1s1.54-1 3.08-1s1.54 1 3.08 1s1.54-1 3.08-1s1.54 1 3.08 1"/></g></svg>
+            <span>100 m Kraul</span>
           </label>
           <input type="radio" name="from" id="from-breast" value="breast">
-          <label for="from-breast" class="sport">
-            <svg class="picto" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><circle cx="12" cy="8.5" r="2.5"/><path d="M3.25 9.25l3.75 3.25h10l3.75-3.25M2.75 16.75c1.54 0 1.54-1 3.08-1s1.54 1 3.08 1s1.54-1 3.08-1s1.54 1 3.08 1s1.54-1 3.08-1s1.54 1 3.08 1m-18.48 4c1.54 0 1.54-1 3.08-1s1.54 1 3.08 1s1.54-1 3.08-1s1.54 1 3.08 1s1.54-1 3.08-1s1.54 1 3.08 1"/></g></svg>
-            <span class="sport__name">100 m Brust</span>
-            <span class="sport__meta">Schwimmen, Langbahn</span>
+          <label for="from-breast" class="choice choice--sport">
+            <svg class="picto" data-picto="breast" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><circle cx="12" cy="8.5" r="2.5"/><path d="M3.25 9.25l3.75 3.25h10l3.75-3.25M2.75 16.75c1.54 0 1.54-1 3.08-1s1.54 1 3.08 1s1.54-1 3.08-1s1.54 1 3.08 1s1.54-1 3.08-1s1.54 1 3.08 1m-18.48 4c1.54 0 1.54-1 3.08-1s1.54 1 3.08 1s1.54-1 3.08-1s1.54 1 3.08 1s1.54-1 3.08-1s1.54 1 3.08 1"/></g></svg>
+            <span>100 m Brust</span>
           </label>
           <input type="radio" name="from" id="from-sprint" value="sprint">
-          <label for="from-sprint" class="sport">
-            <svg class="picto" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><circle cx="14.75" cy="5" r="2"/><path d="m7 10.25l3.25-2.5h3.5l2 3l2.75 1m-4.75-4L11 13.25L14.25 16l-1 4.75M11 13.25l-2 3.5l-3.75.5"/></g></svg>
-            <span class="sport__name">100 m Sprint</span>
-            <span class="sport__meta">Leichtathletik</span>
+          <label for="from-sprint" class="choice choice--sport">
+            <svg class="picto" data-picto="sprint" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><circle cx="14.75" cy="5" r="2"/><path d="m7 10.25l3.25-2.5h3.5l2 3l2.75 1m-4.75-4L11 13.25L14.25 16l-1 4.75M11 13.25l-2 3.5l-3.75.5"/></g></svg>
+            <span>100 m Sprint</span>
           </label>
         </fieldset>
       </section>
 
-      <section class="step step--result" aria-labelledby="h-perf">
-        <div class="perf">
-          <h2 id="h-perf"><span class="step__n">3</span> Deine Leistung</h2>
-          <div class="field field--big">
-            <label for="value" id="value-label">Maximalgewicht im Bankdrücken</label>
-            <div class="input-unit">
-              <input id="value" name="value" type="text" inputmode="decimal" value="120" autocomplete="off" aria-describedby="value-help">
-              <span class="unit" id="value-unit" aria-hidden="true">kg</span>
-            </div>
-            <p class="help" id="value-help" aria-live="polite">Eine saubere Wiederholung, Gewicht inklusive Stange.</p>
-          </div>
-
-          <div class="score" id="score" hidden>
-            <p class="score__figure"><span id="score-points">554</span></p>
-            <p class="score__label">Punkte, Stufe <strong id="score-level">Ambitioniert</strong></p>
-          </div>
+      <!-- 5 Leistung -->
+      <section class="step" data-step="value" aria-labelledby="q-value">
+        <h1 id="q-value" tabindex="-1">Wie viel drückst du?</h1>
+        <div class="input-unit">
+          <input id="value" name="value" type="text" inputmode="decimal" placeholder="120" autocomplete="off" aria-describedby="value-help">
+          <span class="unit" id="value-unit" aria-hidden="true">kg</span>
         </div>
-
-        <div class="sheet" aria-live="polite">
-          <table class="results" id="results">
-            <caption>Dein Gegenwert in jeder Disziplin</caption>
-            <thead>
-              <tr><th scope="col">Disziplin</th><th scope="col" class="num">Gegenwert</th></tr>
-            </thead>
-            <tbody id="results-body">
-              <tr><td colspan="2" class="results__state">Trag links deine Leistung ein, dann steht hier dein Gegenwert im Schwimmen und Sprint.</td></tr>
-            </tbody>
-          </table>
-
-          <details class="method">
-            <summary>So rechnen wir</summary>
-            <div class="method__body">
-              <p>Jede Leistung wird in Punkte übersetzt und zurück in die anderen Disziplinen. Bankdrücken zählt relativ zum Körpergewicht (DOTS-Formel), Zeiten zählen gegen eine Weltklasse-Referenz für dein Geschlecht, und alles wird nach Alter gewertet.</p>
-              <p>Geeicht ist die Skala auf einen Mann, 25 Jahre, 80 kg: 120 kg Bankdrücken entsprechen 56,50 auf 100 m Kraul, 1:12,00 auf 100 m Brust und 11,20 s auf 100 m Sprint. Eine Schätzung zum Vergleichen, kein Wettkampfstandard.</p>
-            </div>
-          </details>
-        </div>
+        <p class="help" id="value-help" aria-live="polite"></p>
+        <button type="submit" class="btn">Umrechnen</button>
       </section>
 
-      <noscript><p class="noscript">Zum Umrechnen braucht diese Seite JavaScript.</p></noscript>
+      <!-- 6 Ergebnis -->
+      <section class="step step--result" data-step="result" aria-labelledby="q-result">
+        <h1 id="q-result" tabindex="-1">Das entspricht</h1>
+        <ul class="results" id="results"></ul>
+        <p class="note">Eine Schätzung zum Vergleichen, kein Wettkampfstandard.</p>
+        <div class="actions">
+          <button type="button" class="btn" id="other-sport">Andere Sportart</button>
+          <button type="button" class="btn btn--quiet" id="restart">Neu starten</button>
+        </div>
+      </section>
     </form>
+
+    <noscript><p class="noscript">Zum Umrechnen braucht diese Seite JavaScript.</p></noscript>
   </main>
 
   <footer class="foot">
-    <div class="container foot__inner">
-      <p>Piktogramme: <a href="https://iconoven.com/icons">IconOven</a> (MIT), Brust im selben Stil ergänzt.</p>
-      <p><a href="https://github.com/lucachrustowski-dev/convertsports">Quellcode auf GitHub</a></p>
-    </div>
+    <p>Piktogramme: <a href="https://iconoven.com/icons">IconOven</a> (MIT), Brust im selben Stil ergänzt.</p>
   </footer>
 
   <script type="module" src="app.js"></script>
