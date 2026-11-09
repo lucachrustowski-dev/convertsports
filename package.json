@@ -1,0 +1,11 @@
+{
+  "name": "convertsports",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Leistung zwischen Sportarten umrechnen: Bankdrücken, 100 m Kraul, 100 m Brust, 100 m Sprint.",
+  "type": "module",
+  "scripts": {
+    "start": "python3 -m http.server 4173",
+    "test": "node --test"
+  }
+}
