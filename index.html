@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=202611092336">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -34,7 +34,7 @@
       </section>
 
       <!-- 2 Gewicht -->
-      <section class="step" data-step="weight" aria-labelledby="q-weight">
+      <section class="step" data-step="weight" hidden aria-labelledby="q-weight">
         <h1 id="q-weight" tabindex="-1">Wie viel wiegst du?</h1>
         <div class="input-unit">
           <input id="bodyweight" name="bodyweight" type="text" inputmode="decimal" placeholder="80" autocomplete="off" aria-describedby="bodyweight-help">
@@ -50,7 +50,7 @@
       </section>
 
       <!-- 3 Geschlecht -->
-      <section class="step" data-step="sex" aria-labelledby="q-sex">
+      <section class="step" data-step="sex" hidden aria-labelledby="q-sex">
         <h1 id="q-sex" tabindex="-1">Dein Geschlecht?</h1>
         <fieldset class="choices choices--two">
           <legend class="visually-hidden">Geschlecht</legend>
@@ -60,7 +60,7 @@
       </section>
 
       <!-- 4 Sportart -->
-      <section class="step" data-step="sport" aria-labelledby="q-sport">
+      <section class="step" data-step="sport" hidden aria-labelledby="q-sport">
         <h1 id="q-sport" tabindex="-1">Welche Sportart machst du?</h1>
         <fieldset class="choices">
           <legend class="visually-hidden">Sportart</legend>
@@ -88,7 +88,7 @@
       </section>
 
       <!-- 5 Leistung -->
-      <section class="step" data-step="value" aria-labelledby="q-value">
+      <section class="step" data-step="value" hidden aria-labelledby="q-value">
         <h1 id="q-value" tabindex="-1">Wie viel drückst du?</h1>
         <div class="input-unit">
           <input id="value" name="value" type="text" inputmode="decimal" placeholder="120" autocomplete="off" aria-describedby="value-help">
@@ -99,7 +99,7 @@
       </section>
 
       <!-- 6 Ergebnis -->
-      <section class="step step--result" data-step="result" aria-labelledby="q-result">
+      <section class="step step--result" data-step="result" hidden aria-labelledby="q-result">
         <h1 id="q-result" tabindex="-1">Das entspricht</h1>
         <ul class="results" id="results"></ul>
         <p class="note">Eine Schätzung zum Vergleichen, kein Wettkampfstandard.</p>
@@ -117,6 +117,6 @@
     <p>Piktogramme: <a href="https://iconoven.com/icons">IconOven</a> (MIT), Brust im selben Stil ergänzt.</p>
   </footer>
 
-  <script type="module" src="app.js"></script>
+  <script type="module" src="app.js?v=202611092336"></script>
 </body>
 </html>
